@@ -21,6 +21,7 @@ export interface IItem extends Document {
   quantity?: number;
   isSellingFast?: boolean;
   collectionDay?: string; // "Today" or "Tomorrow"
+  username?: string; // Username of the user who created this item
   createdAt: Date;
   updatedAt: Date;
 }
@@ -117,6 +118,11 @@ const ItemSchema: Schema = new Schema(
       type: String,
       enum: ['Today', 'Tomorrow'],
       trim: true,
+    },
+    username: {
+      type: String,
+      trim: true,
+      index: true,
     },
   },
   {
