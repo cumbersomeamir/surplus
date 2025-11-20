@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "cross-env NODE_ENV=staging nodemon --watch src --exec ts-node src/server.ts",
+    "dev": "cross-env NODE_ENV=staging nodemon --watch src --exec tsx src/server.ts",
     "start": "cross-env NODE_ENV=staging node dist/server.js",
     "start:prod": "cross-env NODE_ENV=production node dist/server.js",
     "build": "tsc -p tsconfig.json",
@@ -51,7 +51,7 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.3",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
     "typescript": "^5.4.5"
   }
 }
-

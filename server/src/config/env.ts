@@ -1,7 +1,11 @@
 import dotenv from 'dotenv';
 
-const envFile = `.env.${process.env.NODE_ENV ?? 'staging'}`;
+// Try to load environment-specific file first, then fallback to .env
+const nodeEnv = process.env.NODE_ENV ?? 'staging';
+const envFile = `.env.${nodeEnv}`;
 dotenv.config({ path: envFile });
+// Fallback to .env if environment-specific file doesn't exist
+dotenv.config({ path: '.env' });
 
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? 'staging',
