@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyDh7WjdEqn7b16rPJmK8hu4VbPrbmckIRo';
+// Safely import Config with fallback
+let Config: any = {};
+try {
+  Config = require('react-native-config').default || require('react-native-config');
+} catch (error) {
+  console.warn('react-native-config not available, using fallback');
+}
+
+const GOOGLE_MAPS_API_KEY = Config.GOOGLE_MAPS_API_KEY || '';
 const GEOCODING_API_URL = 'https://maps.googleapis.com/maps/api/geocode/json';
 
 export interface Coordinates {
@@ -17,10 +25,16 @@ export const geocodeAddress = async (address: string): Promise<Coordinates | nul
     }
 
     console.log('🔵 Geocoding: Attempting to geocode:', address);
+    const apiKey = getGoogleMapsApiKey();
+    if (!apiKey) {
+      console.error('❌ Geocoding: No API key available');
+      return null;
+    }
+    
     const response = await axios.get(GEOCODING_API_URL, {
       params: {
         address: address,
-        key: GOOGLE_MAPS_API_KEY,
+        key: apiKey,
       },
     });
 
