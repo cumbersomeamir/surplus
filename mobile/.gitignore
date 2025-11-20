@@ -64,3 +64,9 @@ yarn-error.log
 
 # testing
 /coverage
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+src/config/env.generated.ts

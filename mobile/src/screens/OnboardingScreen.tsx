@@ -11,15 +11,7 @@ import { SelectableOption } from '../components/SelectableOption';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { RootState } from '../store';
 import { Colors } from '../theme/colors';
-
-// For Android emulator, use: http://10.0.2.2:4000
-// For iOS simulator, use: http://localhost:4000
-// For physical device, use your computer's IP: http://YOUR_IP:4000
-const API_BASE_URL = __DEV__
-  ? Platform.OS === 'android'
-    ? 'http://10.0.2.2:4000'
-    : 'http://localhost:4000'
-  : 'https://your-production-api.com';
+import { ENV } from '../config/env';
 
 type OnboardingScreenRouteProp = RouteProp<RootStackParamList, 'Onboarding'>;
 
@@ -69,7 +61,7 @@ export const OnboardingScreen = () => {
         pushNotificationsEnabled: pushNotifications,
       };
 
-      await axios.post(`${API_BASE_URL}/api/onboarding`, onboardingData);
+      await axios.post(`${ENV.API_BASE_URL}/api/onboarding`, onboardingData);
       console.log('Onboarding data saved successfully');
     } catch (error: any) {
       console.error('Error saving onboarding data:', error);

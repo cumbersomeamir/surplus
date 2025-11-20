@@ -10,6 +10,7 @@ import { SurplusLogo } from '../components/SurplusLogo';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { Colors } from '../theme/colors';
 import { completeGoogleAuth } from '../store/slices/appSlice';
+import { ENV } from '../config/env';
 
 type GoogleLoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'GoogleLogin'>;
 
@@ -20,25 +21,19 @@ export const GoogleLoginScreen = () => {
 
   useEffect(() => {
     console.log('🔵 GoogleLoginScreen: useEffect - Configuring Google Sign-In');
-    // Configure Google Sign-In
-    // Safely get webClientId from environment
-    let webClientId = '';
-    try {
-      const Config = require('react-native-config').default || require('react-native-config');
-      webClientId = Config.GOOGLE_WEB_CLIENT_ID || '';
-    } catch (error) {
-      console.warn('react-native-config not available, using fallback');
-      // Fallback to hardcoded value if .env not available (for development)
-      webClientId = '170486330773-8ubl89d7uqg3sj8i10e7qab0loskt6eg.apps.googleusercontent.com';
+    console.log('📊 GoogleLoginScreen: ENV.GOOGLE_WEB_CLIENT_ID:', ENV.GOOGLE_WEB_CLIENT_ID ? 'SET (' + ENV.GOOGLE_WEB_CLIENT_ID.substring(0, 20) + '...)' : 'EMPTY');
+    
+    if (!ENV.GOOGLE_WEB_CLIENT_ID) {
+      console.error('❌ GoogleLoginScreen: GOOGLE_WEB_CLIENT_ID is empty! Run: npm run generate-env-config');
+      return;
     }
     
-    if (webClientId) {
-      GoogleSignin.configure({
-        webClientId: webClientId,
-        offlineAccess: true,
-        scopes: ['profile', 'email'],
-      });
-    }
+    // Configure Google Sign-In
+    GoogleSignin.configure({
+      webClientId: ENV.GOOGLE_WEB_CLIENT_ID,
+      offlineAccess: true,
+      scopes: ['profile', 'email'],
+    });
     console.log('✅ GoogleLoginScreen: Google Sign-In configured');
     
     // Check if user is already signed in

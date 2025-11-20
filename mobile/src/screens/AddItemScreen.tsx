@@ -21,15 +21,7 @@ import { AppButton } from '../components/AppButton';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { RootState } from '../store';
 import { Colors } from '../theme/colors';
-
-// For Android emulator, use: http://10.0.2.2:4000
-// For iOS simulator, use: http://localhost:4000
-// For physical device, use your computer's IP: http://YOUR_IP:4000
-const API_BASE_URL = __DEV__
-  ? Platform.OS === 'android'
-    ? 'http://10.0.2.2:4000'
-    : 'http://localhost:4000'
-  : 'https://your-production-api.com';
+import { ENV } from '../config/env';
 
 const categories = ['Meals', 'Bread & pastries', 'Groceries', 'Flowers', 'Drinks'];
 const collectionDays = ['Today', 'Tomorrow'];
@@ -115,7 +107,7 @@ export const AddItemScreen = () => {
         username: username || undefined,
       };
 
-      const response = await axios.post(`${API_BASE_URL}/api/items`, itemData);
+      const response = await axios.post(`${ENV.API_BASE_URL}/api/items`, itemData);
 
       if (response.data.success) {
         Alert.alert('Success', 'Item created successfully!', [
