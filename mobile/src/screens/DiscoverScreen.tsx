@@ -47,21 +47,7 @@ export const DiscoverScreen = () => {
     }, [selectedCategory])
   );
 
-  useEffect(() => {
-    // Load favorite status for all items
-    const loadFavorites = async () => {
-      if (!username || items.length === 0) return;
-      const favoriteSet = new Set<string>();
-      for (const item of items) {
-        const isFav = await checkFavorite(username, item.id);
-        if (isFav) {
-          favoriteSet.add(item.id);
-        }
-      }
-      setFavorites(favoriteSet);
-    };
-    loadFavorites();
-  }, [username, items]);
+  // Don't automatically load favorites - only check when user clicks favorite button
 
   const loadItems = async () => {
     setLoading(true);
@@ -93,9 +79,24 @@ export const DiscoverScreen = () => {
   const handleFavoriteToggle = async (item: BagData) => {
     if (!username) return;
 
+    // Check current favorite status first (only when user clicks)
     const isCurrentlyFavorite = favorites.has(item.id);
+    
+    // If not in local state, check with API
+    let actualFavoriteStatus = isCurrentlyFavorite;
+    if (!isCurrentlyFavorite) {
+      try {
+        actualFavoriteStatus = await checkFavorite(username, item.id);
+        if (actualFavoriteStatus) {
+          setFavorites((prev) => new Set(prev).add(item.id));
+        }
+      } catch (error) {
+        // If check fails, assume not favorite and proceed
+        actualFavoriteStatus = false;
+      }
+    }
 
-    if (isCurrentlyFavorite) {
+    if (actualFavoriteStatus) {
       // Remove from favorites
       const result = await removeFavorite(username, item.id);
       if (result.success) {

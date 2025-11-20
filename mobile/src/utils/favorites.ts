@@ -53,7 +53,10 @@ export const checkFavorite = async (username: string, itemId: string) => {
     });
     return response.data.isFavorite || false;
   } catch (error: any) {
-    console.error('Error checking favorite:', error);
+    // Don't log 429 errors (rate limiting) to reduce noise
+    if (error.response?.status !== 429) {
+      console.error('Error checking favorite:', error);
+    }
     return false;
   }
 };
