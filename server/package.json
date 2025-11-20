@@ -10,7 +10,8 @@
     "build": "tsc -p tsconfig.json",
     "lint": "eslint . --ext .ts",
     "test": "cross-env NODE_ENV=test jest --runInBand",
-    "generate-sitemap": "node scripts/generate-sitemap.js"
+    "generate-sitemap": "node scripts/generate-sitemap.js",
+    "seed:items": "tsx scripts/seed-items.ts"
   },
   "dependencies": {
     "axios": "^1.7.2",

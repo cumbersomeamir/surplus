@@ -9,9 +9,34 @@ export const createItem = async (req: Request, res: Response): Promise<void> => 
     const item = new Item(itemData);
     await item.save();
 
+    // Format item to match frontend BagData structure
+    const formattedItem = {
+      id: item._id.toString(),
+      title: item.title,
+      subtitle: item.subtitle,
+      collectWindow: item.collectWindow,
+      distance: item.distance,
+      currentPrice: item.currentPrice,
+      originalPrice: item.originalPrice,
+      imageUri: item.imageUri,
+      rating: item.rating,
+      reviewCount: item.reviewCount,
+      badge: item.badge,
+      availabilityLabel: item.availabilityLabel,
+      description: item.description,
+      category: item.category,
+      address: item.address,
+      collectionExperience: item.collectionExperience,
+      foodQuality: item.foodQuality,
+      variety: item.variety,
+      quantity: item.quantity,
+      isSellingFast: item.isSellingFast,
+      collectionDay: item.collectionDay,
+    };
+
     res.status(StatusCodes.CREATED).json({
       success: true,
-      data: item,
+      data: formattedItem,
       message: 'Item created successfully',
     });
   } catch (error: any) {
@@ -30,10 +55,35 @@ export const getItems = async (req: Request, res: Response): Promise<void> => {
 
     const items = await Item.find(query).sort({ createdAt: -1 });
 
+    // Format items to match frontend BagData structure
+    const formattedItems = items.map((item) => ({
+      id: item._id.toString(),
+      title: item.title,
+      subtitle: item.subtitle,
+      collectWindow: item.collectWindow,
+      distance: item.distance,
+      currentPrice: item.currentPrice,
+      originalPrice: item.originalPrice,
+      imageUri: item.imageUri,
+      rating: item.rating,
+      reviewCount: item.reviewCount,
+      badge: item.badge,
+      availabilityLabel: item.availabilityLabel,
+      description: item.description,
+      category: item.category,
+      address: item.address,
+      collectionExperience: item.collectionExperience,
+      foodQuality: item.foodQuality,
+      variety: item.variety,
+      quantity: item.quantity,
+      isSellingFast: item.isSellingFast,
+      collectionDay: item.collectionDay,
+    }));
+
     res.status(StatusCodes.OK).json({
       success: true,
-      data: items,
-      count: items.length,
+      data: formattedItems,
+      count: formattedItems.length,
     });
   } catch (error: any) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -57,9 +107,34 @@ export const getItemById = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
+    // Format item to match frontend BagData structure
+    const formattedItem = {
+      id: item._id.toString(),
+      title: item.title,
+      subtitle: item.subtitle,
+      collectWindow: item.collectWindow,
+      distance: item.distance,
+      currentPrice: item.currentPrice,
+      originalPrice: item.originalPrice,
+      imageUri: item.imageUri,
+      rating: item.rating,
+      reviewCount: item.reviewCount,
+      badge: item.badge,
+      availabilityLabel: item.availabilityLabel,
+      description: item.description,
+      category: item.category,
+      address: item.address,
+      collectionExperience: item.collectionExperience,
+      foodQuality: item.foodQuality,
+      variety: item.variety,
+      quantity: item.quantity,
+      isSellingFast: item.isSellingFast,
+      collectionDay: item.collectionDay,
+    };
+
     res.status(StatusCodes.OK).json({
       success: true,
-      data: item,
+      data: formattedItem,
     });
   } catch (error: any) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
