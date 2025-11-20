@@ -1,25 +1,33 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useSelector } from 'react-redux';
 
+import { SurplusLogo } from '../components/SurplusLogo';
+import { RootState } from '../store';
 import { Colors } from '../theme/colors';
 
-export const HomeScreen = () => (
-  <View style={styles.container}>
-    <View style={styles.hero}>
-      <Text style={styles.tagline}>Surplus</Text>
-      <Text style={styles.title}>Rescue fresh meals before they go to waste.</Text>
-      <Text style={styles.subtitle}>
-        Inspired by Too Good To Go with a high-contrast yellow design system.
-      </Text>
+export const HomeScreen = () => {
+  const email = useSelector((state: RootState) => state.app.email);
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.hero}>
+        <SurplusLogo size={96} />
+        <Text style={styles.tagline}>Surplus</Text>
+        <Text style={styles.title}>Rescue fresh meals before they go to waste.</Text>
+        <Text style={styles.subtitle}>
+          {email ? `Welcome back, ${email}. Your meal rescues start here.` : 'Inspired by Too Good To Go.'}
+        </Text>
+      </View>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Why it matters</Text>
+        <Text style={styles.cardBody}>
+          Save money, support local merchants, and cut food waste in every pickup window.
+        </Text>
+      </View>
     </View>
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>Why it matters</Text>
-      <Text style={styles.cardBody}>
-        Save money, support local merchants, and cut food waste in every pickup window.
-      </Text>
-    </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -34,11 +42,13 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     borderColor: Colors.borderLight,
+    alignItems: 'center',
   },
   tagline: {
     fontSize: 16,
     fontWeight: '600',
     color: Colors.primaryDark,
+    marginTop: 12,
     marginBottom: 12,
   },
   title: {
