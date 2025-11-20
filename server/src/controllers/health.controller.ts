@@ -1,0 +1,10 @@
+import { Request, Response } from 'express';
+
+export const healthController = (_req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    service: 'surplus-server',
+    timestamp: new Date().toISOString(),
+  });
+};
+
