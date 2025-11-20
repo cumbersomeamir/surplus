@@ -1,89 +1,64 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { useSelector } from 'react-redux';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { SurplusLogo } from '../components/SurplusLogo';
-import { RootState } from '../store';
+import { AppButton } from '../components/AppButton';
 import { Colors } from '../theme/colors';
 
-export const HomeScreen = () => {
-  const email = useSelector((state: RootState) => state.app.email);
-
-  return (
+export const HomeScreen = () => (
+  <SafeAreaView style={styles.safeArea}>
     <View style={styles.container}>
-      <View style={styles.hero}>
-        <SurplusLogo size={96} />
-        <Text style={styles.tagline}>Surplus</Text>
-        <Text style={styles.title}>Rescue fresh meals before they go to waste.</Text>
-        <Text style={styles.subtitle}>
-          {email ? `Welcome back, ${email}. Your meal rescues start here.` : 'Inspired by Too Good To Go.'}
-        </Text>
+      <View style={styles.iconContainer}>
+        <Text style={styles.locationIcon}>📍</Text>
       </View>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Why it matters</Text>
-        <Text style={styles.cardBody}>
-          Save money, support local merchants, and cut food waste in every pickup window.
-        </Text>
-      </View>
+      <Text style={styles.title}>Where would you like to find Surprise Bags?</Text>
+      <AppButton label="Use my current location" onPress={() => {}} style={styles.primaryButton} />
+      <TouchableOpacity style={styles.secondaryButton}>
+        <Text style={styles.secondaryLabel}>Select location</Text>
+      </TouchableOpacity>
     </View>
-  );
-};
+  </SafeAreaView>
+);
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    padding: 24,
-    gap: 24,
     backgroundColor: Colors.background,
   },
-  hero: {
-    backgroundColor: Colors.highlightBackground,
-    padding: 24,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 24,
   },
-  tagline: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.primaryDark,
-    marginTop: 12,
-    marginBottom: 12,
+  iconContainer: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: Colors.highlightBackground,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  locationIcon: {
+    fontSize: 64,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    color: Colors.textPrimary,
+    color: Colors.primaryDark,
+    textAlign: 'center',
+    paddingHorizontal: 12,
   },
-  subtitle: {
-    marginTop: 12,
+  primaryButton: {
+    width: '100%',
+  },
+  secondaryButton: {
+    paddingVertical: 12,
+  },
+  secondaryLabel: {
     fontSize: 16,
-    lineHeight: 22,
-    color: Colors.textSecondary,
-  },
-  card: {
-    backgroundColor: Colors.card,
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: Colors.borderMedium,
-    shadowColor: Colors.textPrimary,
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  cardBody: {
-    marginTop: 8,
-    fontSize: 15,
-    lineHeight: 20,
-    color: Colors.textMuted,
+    fontWeight: '500',
+    color: Colors.primaryDark,
   },
 });
 

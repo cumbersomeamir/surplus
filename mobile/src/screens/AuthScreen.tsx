@@ -26,7 +26,7 @@ export const AuthScreen = () => {
     setTimeout(() => {
       dispatch(completeAuth(email.trim().toLowerCase()));
       setLoading(false);
-      navigation.replace('Home');
+      navigation.replace('Onboarding', { step: 0 });
     }, 600);
   }, [dispatch, email, navigation]);
 
