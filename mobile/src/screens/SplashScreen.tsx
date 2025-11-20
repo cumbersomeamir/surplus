@@ -30,7 +30,7 @@ export const SplashScreen = () => {
     ]).start();
 
     const timer = setTimeout(() => {
-      navigation.replace('Auth');
+      navigation.replace('GoogleLogin');
     }, DISPLAY_DURATION_MS);
 
     return () => {

@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AddItemScreen } from '../screens/AddItemScreen';
 import { BagDetailScreen } from '../screens/BagDetailScreen';
 import { AuthScreen } from '../screens/AuthScreen';
+import { GoogleLoginScreen } from '../screens/GoogleLoginScreen';
 import { LocationPickerScreen } from '../screens/LocationPickerScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
@@ -36,6 +37,7 @@ export type BagData = {
 
 export type RootStackParamList = {
   Splash: undefined;
+  GoogleLogin: undefined;
   Auth: undefined;
   Onboarding: { step?: number };
   MainTabs: undefined;
@@ -50,6 +52,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export const AppNavigator = () => (
   <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Splash" component={SplashScreen} />
+    <Stack.Screen name="GoogleLogin" component={GoogleLoginScreen} />
     <Stack.Screen name="Auth" component={AuthScreen} />
     <Stack.Screen name="Onboarding" component={OnboardingScreen} />
     <Stack.Screen name="MainTabs" component={MainTabs} />

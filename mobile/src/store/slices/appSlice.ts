@@ -6,6 +6,12 @@ type AppState = {
   username: string;
   isAuthenticated: boolean;
   selectedLocation: string;
+  googleUser?: {
+    email: string;
+    name: string;
+    photo?: string;
+    id: string;
+  };
 };
 
 const initialState: AppState = {
@@ -14,6 +20,7 @@ const initialState: AppState = {
   username: '',
   isAuthenticated: false,
   selectedLocation: 'Mumbai',
+  googleUser: undefined,
 };
 
 const appSlice = createSlice({
@@ -27,12 +34,25 @@ const appSlice = createSlice({
       state.username = action.payload;
       state.isAuthenticated = true;
     },
+    completeGoogleAuth(
+      state,
+      action: PayloadAction<{
+        email: string;
+        name: string;
+        photo?: string;
+        id: string;
+      }>,
+    ) {
+      state.googleUser = action.payload;
+      state.username = action.payload.email.split('@')[0]; // Use email prefix as username
+      state.isAuthenticated = true;
+    },
     setLocation(state, action: PayloadAction<string>) {
       state.selectedLocation = action.payload;
     },
   },
 });
 
-export const { setInitialized, completeAuth, setLocation } = appSlice.actions;
+export const { setInitialized, completeAuth, completeGoogleAuth, setLocation } = appSlice.actions;
 export const appReducer = appSlice.reducer;
 
