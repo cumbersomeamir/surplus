@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   FlatList,
   SafeAreaView,
@@ -9,89 +9,112 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
+import {
+  CompositeNavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSelector } from 'react-redux';
 
 import { SurpriseBagCard } from '../components/SurpriseBagCard';
 import { RootStackParamList, BagData } from '../navigation/AppNavigator';
 import { TabParamList } from '../navigation/MainTabs';
+import { RootState } from '../store';
 import { Colors } from '../theme/colors';
+import { addFavorite, removeFavorite, checkFavorite } from '../utils/favorites';
+import { getItems } from '../utils/items';
 
 type BrowseScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList, 'Browse'>,
   NativeStackNavigationProp<RootStackParamList>
 >;
 
-const MOCK_BAGS: BagData[] = [
-  {
-    id: '1',
-    title: 'Caffè Nero - Trafalgar Sq',
-    subtitle: 'Standard Bag',
-    collectWindow: 'tomorrow 01:30 - 02:30',
-    distance: '55 m',
-    currentPrice: '£4.49',
-    originalPrice: '£10.00',
-    imageUri: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400',
-    rating: '4.2',
-    availabilityLabel: '1 left',
-    reviewCount: 20,
-    description: 'A selection of delicious freshly made flatbreads, paninis, salad boxes, cakes, pastries and much more.',
-    category: 'Meal',
-    address: '60-61 Trafalgar Square, St. James\'s, London WC2N 5DS, UK',
-    collectionExperience: 4.5,
-    foodQuality: 4.2,
-    collectionDay: 'Tomorrow',
-  },
-  {
-    id: '2',
-    title: 'Pret - Trafalgar Square South',
-    subtitle: 'Lunch Bag',
-    collectWindow: 'today 20:00 - 20:30',
-    distance: '58 m',
-    currentPrice: '£4.00',
-    originalPrice: '£12.00',
-    imageUri: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400',
-    rating: '4.3',
-    availabilityLabel: 'Selling fast',
-    reviewCount: 35,
-    description: 'A selection of lunch items including soups, sandwiches, and salads.',
-    category: 'Meal',
-    address: 'Trafalgar Square South, London',
-    collectionExperience: 4.4,
-    foodQuality: 4.3,
-    isSellingFast: true,
-    collectionDay: 'Today',
-  },
-  {
-    id: '3',
-    title: 'The Trafalgar St. James London, Curio Collection by Hilton - Victoria',
-    subtitle: 'Small Baked goods',
-    collectWindow: 'today 16:00 - 16:30',
-    distance: '99 m',
-    currentPrice: '£3.00',
-    originalPrice: '£9.00',
-    imageUri: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400',
-    rating: '4.2',
-    availabilityLabel: '2 left',
-    reviewCount: 28,
-    description: 'A selection of freshly baked pastries, croissants, and cakes.',
-    category: 'Bread & pastries',
-    address: 'Victoria, London',
-    collectionExperience: 4.3,
-    foodQuality: 4.2,
-    collectionDay: 'Today',
-  },
-];
-
 export const BrowseScreen = () => {
   const navigation = useNavigation<BrowseScreenNavigationProp>();
+  const username = useSelector((state: RootState) => state.app.username);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [sortBy, setSortBy] = useState('Relevance');
   const [searchQuery, setSearchQuery] = useState('');
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [items, setItems] = useState<BagData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadItems();
+  }, []);
+
+  // Refresh items when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadItems();
+    }, [])
+  );
+
+  useEffect(() => {
+    // Load favorite status for all items
+    const loadFavorites = async () => {
+      if (!username || items.length === 0) return;
+      const favoriteSet = new Set<string>();
+      // Load favorites for all items (not just filtered ones)
+      for (const item of items) {
+        const isFav = await checkFavorite(username, item.id);
+        if (isFav) {
+          favoriteSet.add(item.id);
+        }
+      }
+      setFavorites(favoriteSet);
+    };
+    loadFavorites();
+  }, [username, items]);
+
+  const loadItems = async () => {
+    setLoading(true);
+    const fetchedItems = await getItems();
+    setItems(fetchedItems);
+    setLoading(false);
+  };
+
+  // Filter items based on search query
+  const filteredItems = items.filter((item) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      item.title.toLowerCase().includes(query) ||
+      item.subtitle.toLowerCase().includes(query) ||
+      item.description?.toLowerCase().includes(query) ||
+      item.category?.toLowerCase().includes(query) ||
+      item.address?.toLowerCase().includes(query)
+    );
+  });
 
   const handleCardPress = (bag: BagData) => {
     navigation.navigate('BagDetail', { bag });
+  };
+
+  const handleFavoriteToggle = async (item: BagData) => {
+    if (!username) return;
+
+    const isCurrentlyFavorite = favorites.has(item.id);
+
+    if (isCurrentlyFavorite) {
+      // Remove from favorites
+      const result = await removeFavorite(username, item.id);
+      if (result.success) {
+        setFavorites((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(item.id);
+          return newSet;
+        });
+      }
+    } else {
+      // Add to favorites
+      const result = await addFavorite(username, item.id, item);
+      if (result.success) {
+        setFavorites((prev) => new Set(prev).add(item.id));
+      }
+    }
   };
 
   return (
@@ -144,7 +167,7 @@ export const BrowseScreen = () => {
 
         {viewMode === 'list' ? (
           <FlatList
-            data={MOCK_BAGS}
+            data={filteredItems}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <SurpriseBagCard
@@ -159,10 +182,23 @@ export const BrowseScreen = () => {
                 availabilityLabel={item.availabilityLabel}
                 variant="vertical"
                 onPress={() => handleCardPress(item)}
+                onHeartPress={() => handleFavoriteToggle(item)}
+                isFavorite={favorites.has(item.id)}
               />
             )}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              loading ? (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>Loading...</Text>
+                </View>
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>No items available</Text>
+                </View>
+              )
+            }
           />
         ) : (
           <View style={styles.mapPlaceholder}>
@@ -275,6 +311,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   mapPlaceholderText: {
+    fontSize: 16,
+    color: Colors.textMuted,
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
     fontSize: 16,
     color: Colors.textMuted,
   },

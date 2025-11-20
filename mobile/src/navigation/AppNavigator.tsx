@@ -1,8 +1,10 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { AddItemScreen } from '../screens/AddItemScreen';
 import { BagDetailScreen } from '../screens/BagDetailScreen';
 import { AuthScreen } from '../screens/AuthScreen';
+import { LocationPickerScreen } from '../screens/LocationPickerScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { SplashScreen } from '../screens/SplashScreen';
@@ -39,6 +41,8 @@ export type RootStackParamList = {
   MainTabs: undefined;
   BagDetail: { bag?: BagData };
   Settings: undefined;
+  AddItem: undefined;
+  LocationPicker: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -53,6 +57,22 @@ export const AppNavigator = () => (
     <Stack.Screen
       name="Settings"
       component={SettingsScreen}
+      options={{
+        presentation: 'modal',
+        headerShown: false,
+      }}
+    />
+    <Stack.Screen
+      name="AddItem"
+      component={AddItemScreen}
+      options={{
+        presentation: 'modal',
+        headerShown: false,
+      }}
+    />
+    <Stack.Screen
+      name="LocationPicker"
+      component={LocationPickerScreen}
       options={{
         presentation: 'modal',
         headerShown: false,

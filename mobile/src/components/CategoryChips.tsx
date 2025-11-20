@@ -6,21 +6,42 @@ import { Colors } from '../theme/colors';
 type CategoryChipsProps = {
   categories: string[];
   initialIndex?: number;
+  selectedCategory?: string;
+  onCategoryChange?: (category: string) => void;
   style?: ViewStyle;
 };
 
-export const CategoryChips: React.FC<CategoryChipsProps> = ({ categories, initialIndex = 0, style }) => {
+export const CategoryChips: React.FC<CategoryChipsProps> = ({
+  categories,
+  initialIndex = 0,
+  selectedCategory,
+  onCategoryChange,
+  style,
+}) => {
   const [selectedIndex, setSelectedIndex] = useState(initialIndex);
+
+  const handleCategoryPress = (category: string, index: number) => {
+    setSelectedIndex(index);
+    onCategoryChange?.(category);
+  };
+
+  // Use selectedCategory if provided, otherwise use selectedIndex
+  const isSelected = (category: string, index: number) => {
+    if (selectedCategory !== undefined) {
+      return selectedCategory === category;
+    }
+    return selectedIndex === index;
+  };
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.row, style]}>
       {categories.map((category, index) => {
-        const selected = selectedIndex === index;
+        const selected = isSelected(category, index);
         return (
           <TouchableOpacity
             key={category}
             style={[styles.chip, selected && styles.chipSelected]}
-            onPress={() => setSelectedIndex(index)}
+            onPress={() => handleCategoryPress(category, index)}
           >
             <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>{category}</Text>
           </TouchableOpacity>

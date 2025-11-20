@@ -1,82 +1,140 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
+import {
+  CompositeNavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { CategoryChips } from '../components/CategoryChips';
 import { SurpriseBagCard } from '../components/SurpriseBagCard';
 import { RootStackParamList, BagData } from '../navigation/AppNavigator';
 import { TabParamList } from '../navigation/MainTabs';
+import { RootState } from '../store';
+import { setLocation } from '../store/slices/appSlice';
 import { Colors } from '../theme/colors';
+import { addFavorite, removeFavorite, checkFavorite } from '../utils/favorites';
+import { getItems } from '../utils/items';
 
 type DiscoverScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList, 'Discover'>,
   NativeStackNavigationProp<RootStackParamList>
 >;
 
-const popularData: BagData[] = [
-  {
-    id: '1',
-    title: 'Pret - Trafalgar Square South',
-    subtitle: 'Breakfast Bag',
-    collectWindow: 'today 16:00 - 16:30',
-    distance: '58 m',
-    currentPrice: '£3.00',
-    originalPrice: '£9.00',
-    imageUri: 'https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?auto=format&fit=crop&w=800&q=80',
-    rating: '4.9',
-    availabilityLabel: 'Sold out',
-    reviewCount: 45,
-    description: 'A selection of delicious freshly made flatbreads, paninis, salad boxes, cakes, pastries and much more.',
-    category: 'Meal',
-    address: 'Trafalgar Square South, London',
-    collectionExperience: 4.8,
-    foodQuality: 4.9,
-    collectionDay: 'Today',
-  },
-  {
-    id: '2',
-    title: 'Sidequest Gamers Hub - Charing Cross',
-    subtitle: 'Bubble Tea Surprise Bag',
-    collectWindow: 'tomorrow 10:30 - 11:00',
-    distance: '561 m',
-    currentPrice: '£4.00',
-    originalPrice: '£12.00',
-    imageUri: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
-    rating: '4.7',
-    availabilityLabel: 'New',
-    reviewCount: 32,
-    description: 'A selection of bubble teas and snacks from our gaming hub.',
-    category: 'Drinks',
-    address: 'Charing Cross, London',
-    collectionExperience: 4.6,
-    foodQuality: 4.7,
-    collectionDay: 'Tomorrow',
-  },
-];
-
 const categories = ['All', 'Meals', 'Bread & pastries', 'Groceries', 'Flowers', 'Drinks'];
 
 export const DiscoverScreen = () => {
   const navigation = useNavigation<DiscoverScreenNavigationProp>();
+  const dispatch = useDispatch();
+  const username = useSelector((state: RootState) => state.app.username);
+  const selectedLocation = useSelector((state: RootState) => state.app.selectedLocation);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [items, setItems] = useState<BagData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  useEffect(() => {
+    loadItems();
+  }, [selectedCategory]);
+
+  // Refresh items when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadItems();
+    }, [selectedCategory])
+  );
+
+  useEffect(() => {
+    // Load favorite status for all items
+    const loadFavorites = async () => {
+      if (!username || items.length === 0) return;
+      const favoriteSet = new Set<string>();
+      for (const item of items) {
+        const isFav = await checkFavorite(username, item.id);
+        if (isFav) {
+          favoriteSet.add(item.id);
+        }
+      }
+      setFavorites(favoriteSet);
+    };
+    loadFavorites();
+  }, [username, items]);
+
+  const loadItems = async () => {
+    setLoading(true);
+    const fetchedItems = await getItems(selectedCategory);
+    setItems(fetchedItems);
+    setLoading(false);
+  };
+
+  // Get popular items (first 2 for "These were popular today")
+  const popularItems = items.slice(0, 2);
+  
+  // Get items with low availability for "Save before it's too late"
+  const urgentItems = items.filter((item) => 
+    item.availabilityLabel && (item.availabilityLabel.includes('left') || item.availabilityLabel === 'Selling fast')
+  ).slice(0, 2);
 
   const handleCardPress = (bag: BagData) => {
     navigation.navigate('BagDetail', { bag });
   };
 
+  const handleAddItem = () => {
+    navigation.navigate('AddItem');
+  };
+
+  const handleLocationPress = () => {
+    navigation.navigate('LocationPicker');
+  };
+
+  const handleFavoriteToggle = async (item: BagData) => {
+    if (!username) return;
+
+    const isCurrentlyFavorite = favorites.has(item.id);
+
+    if (isCurrentlyFavorite) {
+      // Remove from favorites
+      const result = await removeFavorite(username, item.id);
+      if (result.success) {
+        setFavorites((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(item.id);
+          return newSet;
+        });
+      }
+    } else {
+      // Add to favorites
+      const result = await addFavorite(username, item.id, item);
+      if (result.success) {
+        setFavorites((prev) => new Set(prev).add(item.id));
+      }
+    }
+  };
+
   return (
   <SafeAreaView style={styles.safeArea}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <TouchableOpacity style={styles.locationPill}>
-        <View style={styles.locationIconContainer}>
-          <Text style={styles.locationIcon}>🧭</Text>
-        </View>
-        <Text style={styles.locationLabel}>Chosen location</Text>
-        <Text style={styles.locationValue}>London ▾</Text>
-      </TouchableOpacity>
+      <View style={styles.locationRow}>
+        <TouchableOpacity style={styles.locationPill} onPress={handleLocationPress}>
+          <View style={styles.locationIconContainer}>
+            <Text style={styles.locationIcon}>🧭</Text>
+          </View>
+          <Text style={styles.locationLabel}>Chosen location</Text>
+          <Text style={styles.locationValue}>{selectedLocation} ▾</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
+          <Text style={styles.addButtonIcon}>+</Text>
+        </TouchableOpacity>
+      </View>
 
-      <CategoryChips categories={categories} />
+      <CategoryChips
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+      />
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>These were popular today</Text>
@@ -85,9 +143,21 @@ export const DiscoverScreen = () => {
         </TouchableOpacity>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalList}>
-        {popularData.map((item) => (
-          <SurpriseBagCard key={item.id} {...item} onPress={() => handleCardPress(item)} />
-        ))}
+        {loading ? (
+          <Text style={styles.loadingText}>Loading...</Text>
+        ) : popularItems.length > 0 ? (
+          popularItems.map((item) => (
+            <SurpriseBagCard
+              key={item.id}
+              {...item}
+              onPress={() => handleCardPress(item)}
+              onHeartPress={() => handleFavoriteToggle(item)}
+              isFavorite={favorites.has(item.id)}
+            />
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No items available</Text>
+        )}
       </ScrollView>
 
       <View style={styles.sectionHeader}>
@@ -97,14 +167,21 @@ export const DiscoverScreen = () => {
         </TouchableOpacity>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalList}>
-        {popularData.map((item) => (
-          <SurpriseBagCard
-            key={`late-${item.id}`}
-            {...item}
-            availabilityLabel="2 left"
-            onPress={() => handleCardPress({ ...item, availabilityLabel: '2 left' })}
-          />
-        ))}
+        {loading ? (
+          <Text style={styles.loadingText}>Loading...</Text>
+        ) : urgentItems.length > 0 ? (
+          urgentItems.map((item) => (
+            <SurpriseBagCard
+              key={item.id}
+              {...item}
+              onPress={() => handleCardPress(item)}
+              onHeartPress={() => handleFavoriteToggle(item)}
+              isFavorite={favorites.has(item.id)}
+            />
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No urgent items available</Text>
+        )}
       </ScrollView>
 
       <View style={styles.sectionHeader}>
@@ -134,7 +211,13 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     gap: 20,
   },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   locationPill: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 24,
@@ -143,6 +226,25 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
     padding: 16,
     gap: 12,
+  },
+  addButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.primaryDark,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.textPrimary,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  addButtonIcon: {
+    fontSize: 32,
+    color: Colors.textOnDark,
+    fontWeight: '300',
+    lineHeight: 32,
   },
   locationIconContainer: {
     width: 32,
@@ -196,6 +298,16 @@ const styles = StyleSheet.create({
   placeholderText: {
     color: Colors.textMuted,
     textAlign: 'center',
+  },
+  loadingText: {
+    fontSize: 14,
+    color: Colors.textMuted,
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: Colors.textMuted,
+    padding: 20,
   },
 });
 

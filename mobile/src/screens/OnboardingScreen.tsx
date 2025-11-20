@@ -1,13 +1,25 @@
 import React, { useState } from 'react';
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
 
 import { AppButton } from '../components/AppButton';
 import { ProgressDots } from '../components/ProgressDots';
 import { SelectableOption } from '../components/SelectableOption';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootState } from '../store';
 import { Colors } from '../theme/colors';
+
+// For Android emulator, use: http://10.0.2.2:4000
+// For iOS simulator, use: http://localhost:4000
+// For physical device, use your computer's IP: http://YOUR_IP:4000
+const API_BASE_URL = __DEV__
+  ? Platform.OS === 'android'
+    ? 'http://10.0.2.2:4000'
+    : 'http://localhost:4000'
+  : 'https://your-production-api.com';
 
 type OnboardingScreenRouteProp = RouteProp<RootStackParamList, 'Onboarding'>;
 
@@ -32,20 +44,62 @@ const COLLECTION_TIMES = [
 export const OnboardingScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<OnboardingScreenRouteProp>();
+  const username = useSelector((state: RootState) => state.app.username);
   const [step, setStep] = useState(route.params?.step ?? 0);
   const [selectedMotivations, setSelectedMotivations] = useState<Set<number>>(new Set());
   const [selectedTimes, setSelectedTimes] = useState<Set<number>>(new Set());
+  const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleNext = () => {
+  const submitOnboardingData = async (pushNotifications: boolean) => {
+    if (!username) {
+      console.warn('No username found, skipping onboarding data submission');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const motivationsArray = Array.from(selectedMotivations).map((index) => MOTIVATIONS[index]);
+      const timesArray = Array.from(selectedTimes).map((index) => COLLECTION_TIMES[index]);
+
+      const onboardingData = {
+        username,
+        motivations: motivationsArray,
+        collectionTimes: timesArray,
+        pushNotificationsEnabled: pushNotifications,
+      };
+
+      await axios.post(`${API_BASE_URL}/api/onboarding`, onboardingData);
+      console.log('Onboarding data saved successfully');
+    } catch (error: any) {
+      console.error('Error saving onboarding data:', error);
+      // Don't show error to user, just log it
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleNext = async () => {
     if (step < 3) {
       setStep(step + 1);
     } else {
+      // Step 3 - "Yes, please" button
+      setPushNotificationsEnabled(true);
+      await submitOnboardingData(true);
       navigation.replace('MainTabs');
     }
   };
 
-  const handleSkip = () => {
-    navigation.replace('MainTabs');
+  const handleSkip = async () => {
+    if (step === 3) {
+      // Step 3 - "Maybe later" button - submit data
+      setPushNotificationsEnabled(false);
+      await submitOnboardingData(false);
+      navigation.replace('MainTabs');
+    } else {
+      // Skip from earlier steps - just navigate, don't submit yet
+      navigation.replace('MainTabs');
+    }
   };
 
   const toggleMotivation = (index: number) => {
@@ -142,8 +196,13 @@ export const OnboardingScreen = () => {
         notifications to keep you up to date with all of it!
       </Text>
       <View style={styles.notificationButtons}>
-        <AppButton label="Yes, please" onPress={handleNext} style={styles.primaryButton} />
-        <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
+        <AppButton
+          label="Yes, please"
+          onPress={handleNext}
+          style={styles.primaryButton}
+          loading={isSubmitting}
+        />
+        <TouchableOpacity onPress={handleSkip} style={styles.skipButton} disabled={isSubmitting}>
           <Text style={styles.skipText}>Maybe later</Text>
         </TouchableOpacity>
       </View>

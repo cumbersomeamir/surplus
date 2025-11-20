@@ -18,6 +18,7 @@ type SurpriseBagCardProps = {
   style?: ViewStyle;
   onPress?: () => void;
   onHeartPress?: () => void;
+  isFavorite?: boolean;
 };
 
 export const SurpriseBagCard: React.FC<SurpriseBagCardProps> = ({
@@ -35,6 +36,7 @@ export const SurpriseBagCard: React.FC<SurpriseBagCardProps> = ({
   style,
   onPress,
   onHeartPress,
+  isFavorite = false,
 }) => (
   <TouchableOpacity
     style={[styles.card, variant === 'vertical' && styles.cardVertical, style]}
@@ -61,7 +63,9 @@ export const SurpriseBagCard: React.FC<SurpriseBagCardProps> = ({
           onHeartPress?.();
         }}
       >
-        <Text style={styles.heartIcon}>♡</Text>
+        <Text style={[styles.heartIcon, isFavorite && styles.heartIconFilled]}>
+          {isFavorite ? '♥' : '♡'}
+        </Text>
       </TouchableOpacity>
     </View>
     <View style={styles.content}>
@@ -190,6 +194,9 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+  },
+  heartIconFilled: {
+    color: Colors.primaryDark,
   },
 });
 

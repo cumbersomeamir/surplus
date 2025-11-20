@@ -3,15 +3,17 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 type AppState = {
   initialized: boolean;
   buildVersion: string;
-  email: string;
+  username: string;
   isAuthenticated: boolean;
+  selectedLocation: string;
 };
 
 const initialState: AppState = {
   initialized: false,
   buildVersion: '0.1.0',
-  email: '',
+  username: '',
   isAuthenticated: false,
+  selectedLocation: 'Mumbai',
 };
 
 const appSlice = createSlice({
@@ -22,12 +24,15 @@ const appSlice = createSlice({
       state.initialized = action.payload;
     },
     completeAuth(state, action: PayloadAction<string>) {
-      state.email = action.payload;
+      state.username = action.payload;
       state.isAuthenticated = true;
+    },
+    setLocation(state, action: PayloadAction<string>) {
+      state.selectedLocation = action.payload;
     },
   },
 });
 
-export const { setInitialized, completeAuth } = appSlice.actions;
+export const { setInitialized, completeAuth, setLocation } = appSlice.actions;
 export const appReducer = appSlice.reducer;
 

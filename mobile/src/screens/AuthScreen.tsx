@@ -12,23 +12,23 @@ import { Colors } from '../theme/colors';
 import { completeAuth } from '../store/slices/appSlice';
 
 export const AuthScreen = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const dispatch = useDispatch();
 
   const handleContinue = useCallback(() => {
-    if (!email.trim() || !/\S+@\S+\.\S+/.test(email.trim())) {
-      Alert.alert('Enter a valid email address to continue.');
+    if (!username.trim() || username.trim().length < 3) {
+      Alert.alert('Please enter a username (at least 3 characters) to continue.');
       return;
     }
     setLoading(true);
     setTimeout(() => {
-      dispatch(completeAuth(email.trim().toLowerCase()));
+      dispatch(completeAuth(username.trim()));
       setLoading(false);
       navigation.replace('Onboarding', { step: 0 });
     }, 600);
-  }, [dispatch, email, navigation]);
+  }, [dispatch, username, navigation]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -44,8 +44,14 @@ export const AuthScreen = () => {
           />
         </View>
         <View style={styles.formSection}>
-          <AppTextField placeholder="your@email.com" value={email} onChangeText={setEmail} />
-          <AppButton label="Continue with email" onPress={handleContinue} loading={loading} />
+          <AppTextField
+            placeholder="Enter your username"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+            keyboardType="default"
+          />
+          <AppButton label="Continue" onPress={handleContinue} loading={loading} />
           <View style={styles.logoRow}>
             <SurplusLogo size={68} strokeColor={Colors.primaryDark} backgroundColor={Colors.highlightBackground} />
             <Text style={styles.logoCopy}>Surplus keeps every rescue fast and secure.</Text>

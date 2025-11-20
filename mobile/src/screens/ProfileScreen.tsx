@@ -26,14 +26,12 @@ type ProfileScreenNavigationProp = CompositeNavigationProp<
 
 export const ProfileScreen = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  const email = useSelector((state: RootState) => state.app.email);
+  const username = useSelector((state: RootState) => state.app.username);
   const [showBusinessBanner, setShowBusinessBanner] = useState(true);
   const [hasOrders] = useState(false); // Will be connected to orders state later
 
-  // Extract name from email or use default
-  const userName = email
-    ? email.split('@')[0].split('.').map((n) => n.charAt(0).toUpperCase() + n.slice(1)).join(' ')
-    : 'User';
+  // Use username directly or format it
+  const userName = username || 'User';
 
   const handleFindBag = () => {
     navigation.navigate('Discover');
