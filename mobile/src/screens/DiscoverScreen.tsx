@@ -1,12 +1,23 @@
 import React from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { CategoryChips } from '../components/CategoryChips';
 import { SurpriseBagCard } from '../components/SurpriseBagCard';
+import { RootStackParamList, BagData } from '../navigation/AppNavigator';
+import { TabParamList } from '../navigation/MainTabs';
 import { Colors } from '../theme/colors';
 
-const popularData = [
+type DiscoverScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, 'Discover'>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
+
+const popularData: BagData[] = [
   {
+    id: '1',
     title: 'Pret - Trafalgar Square South',
     subtitle: 'Breakfast Bag',
     collectWindow: 'today 16:00 - 16:30',
@@ -16,8 +27,16 @@ const popularData = [
     imageUri: 'https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?auto=format&fit=crop&w=800&q=80',
     rating: '4.9',
     availabilityLabel: 'Sold out',
+    reviewCount: 45,
+    description: 'A selection of delicious freshly made flatbreads, paninis, salad boxes, cakes, pastries and much more.',
+    category: 'Meal',
+    address: 'Trafalgar Square South, London',
+    collectionExperience: 4.8,
+    foodQuality: 4.9,
+    collectionDay: 'Today',
   },
   {
+    id: '2',
     title: 'Sidequest Gamers Hub - Charing Cross',
     subtitle: 'Bubble Tea Surprise Bag',
     collectWindow: 'tomorrow 10:30 - 11:00',
@@ -27,12 +46,26 @@ const popularData = [
     imageUri: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
     rating: '4.7',
     availabilityLabel: 'New',
+    reviewCount: 32,
+    description: 'A selection of bubble teas and snacks from our gaming hub.',
+    category: 'Drinks',
+    address: 'Charing Cross, London',
+    collectionExperience: 4.6,
+    foodQuality: 4.7,
+    collectionDay: 'Tomorrow',
   },
 ];
 
 const categories = ['All', 'Meals', 'Bread & pastries', 'Groceries', 'Flowers', 'Drinks'];
 
-export const DiscoverScreen = () => (
+export const DiscoverScreen = () => {
+  const navigation = useNavigation<DiscoverScreenNavigationProp>();
+
+  const handleCardPress = (bag: BagData) => {
+    navigation.navigate('BagDetail', { bag });
+  };
+
+  return (
   <SafeAreaView style={styles.safeArea}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <TouchableOpacity style={styles.locationPill}>
@@ -53,7 +86,7 @@ export const DiscoverScreen = () => (
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalList}>
         {popularData.map((item) => (
-          <SurpriseBagCard key={item.title} {...item} />
+          <SurpriseBagCard key={item.id} {...item} onPress={() => handleCardPress(item)} />
         ))}
       </ScrollView>
 
@@ -65,7 +98,12 @@ export const DiscoverScreen = () => (
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalList}>
         {popularData.map((item) => (
-          <SurpriseBagCard key={`late-${item.title}`} {...item} availabilityLabel="2 left" />
+          <SurpriseBagCard
+            key={`late-${item.id}`}
+            {...item}
+            availabilityLabel="2 left"
+            onPress={() => handleCardPress({ ...item, availabilityLabel: '2 left' })}
+          />
         ))}
       </ScrollView>
 
@@ -80,7 +118,8 @@ export const DiscoverScreen = () => (
       </View>
     </ScrollView>
   </SafeAreaView>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   safeArea: {

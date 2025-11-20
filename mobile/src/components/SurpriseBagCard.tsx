@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 import { Colors } from '../theme/colors';
 
@@ -14,6 +14,10 @@ type SurpriseBagCardProps = {
   rating?: string;
   badge?: string;
   availabilityLabel?: string;
+  variant?: 'horizontal' | 'vertical';
+  style?: ViewStyle;
+  onPress?: () => void;
+  onHeartPress?: () => void;
 };
 
 export const SurpriseBagCard: React.FC<SurpriseBagCardProps> = ({
@@ -27,8 +31,16 @@ export const SurpriseBagCard: React.FC<SurpriseBagCardProps> = ({
   rating,
   badge,
   availabilityLabel,
+  variant = 'horizontal',
+  style,
+  onPress,
+  onHeartPress,
 }) => (
-  <TouchableOpacity style={styles.card} activeOpacity={0.9}>
+  <TouchableOpacity
+    style={[styles.card, variant === 'vertical' && styles.cardVertical, style]}
+    activeOpacity={0.9}
+    onPress={onPress}
+  >
     <View style={styles.imageWrapper}>
       <Image source={{ uri: imageUri }} style={styles.image} resizeMode="cover" />
       {availabilityLabel && (
@@ -41,6 +53,16 @@ export const SurpriseBagCard: React.FC<SurpriseBagCardProps> = ({
           <Text style={styles.ratingText}>⭐ {rating}</Text>
         </View>
       )}
+      <TouchableOpacity
+        style={styles.heart}
+        activeOpacity={0.7}
+        onPress={(e) => {
+          e.stopPropagation();
+          onHeartPress?.();
+        }}
+      >
+        <Text style={styles.heartIcon}>♡</Text>
+      </TouchableOpacity>
     </View>
     <View style={styles.content}>
       {badge && <Text style={styles.badge}>{badge}</Text>}
@@ -53,9 +75,6 @@ export const SurpriseBagCard: React.FC<SurpriseBagCardProps> = ({
         {originalPrice && <Text style={styles.originalPrice}>{originalPrice}</Text>}
         <Text style={styles.currentPrice}>{currentPrice}</Text>
       </View>
-    </View>
-    <View style={styles.heart}>
-      <Text style={styles.heartIcon}>♡</Text>
     </View>
   </TouchableOpacity>
 );
@@ -71,6 +90,11 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
     elevation: 4,
+  },
+  cardVertical: {
+    width: '100%',
+    marginRight: 0,
+    marginBottom: 16,
   },
   imageWrapper: {
     height: 150,
@@ -155,10 +179,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   heartIcon: {
     fontSize: 22,
-    color: Colors.primaryDark,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 });
 

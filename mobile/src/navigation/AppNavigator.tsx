@@ -1,16 +1,42 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { BagDetailScreen } from '../screens/BagDetailScreen';
 import { AuthScreen } from '../screens/AuthScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { SplashScreen } from '../screens/SplashScreen';
 import { MainTabs } from './MainTabs';
+
+export type BagData = {
+  id: string;
+  title: string;
+  subtitle: string;
+  collectWindow: string;
+  distance: string;
+  currentPrice: string;
+  originalPrice?: string;
+  imageUri: string;
+  rating?: string;
+  reviewCount?: number;
+  badge?: string;
+  availabilityLabel?: string;
+  description?: string;
+  category?: string;
+  address?: string;
+  collectionExperience?: number;
+  foodQuality?: number;
+  variety?: number;
+  quantity?: number;
+  isSellingFast?: boolean;
+  collectionDay?: string;
+};
 
 export type RootStackParamList = {
   Splash: undefined;
   Auth: undefined;
   Onboarding: { step?: number };
   MainTabs: undefined;
+  BagDetail: { bag?: BagData };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -21,6 +47,7 @@ export const AppNavigator = () => (
     <Stack.Screen name="Auth" component={AuthScreen} />
     <Stack.Screen name="Onboarding" component={OnboardingScreen} />
     <Stack.Screen name="MainTabs" component={MainTabs} />
+    <Stack.Screen name="BagDetail" component={BagDetailScreen} />
   </Stack.Navigator>
 );
 

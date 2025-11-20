@@ -2,8 +2,11 @@ import React from 'react';
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
+import { BrowseScreen } from '../screens/BrowseScreen';
 import { DiscoverScreen } from '../screens/DiscoverScreen';
+import { FavouritesScreen } from '../screens/FavouritesScreen';
 import { PlaceholderScreen } from '../screens/PlaceholderScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
 import { Colors } from '../theme/colors';
 
 export type TabParamList = {
@@ -16,11 +19,19 @@ export type TabParamList = {
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
-const tabIcon = (label: string) => ({
+const tabIcon = (label: string, isFavourites?: boolean) => ({
   color,
+  focused,
 }: {
   color: string;
-}) => <Text style={{ color, fontSize: 16 }}>{label}</Text>;
+  focused: boolean;
+}) => {
+  // Show filled heart for Favourites when active
+  if (isFavourites && focused) {
+    return <Text style={{ color, fontSize: 16 }}>♥</Text>;
+  }
+  return <Text style={{ color, fontSize: 16 }}>{label}</Text>;
+};
 
 export const MainTabs = () => (
   <Tab.Navigator
@@ -45,7 +56,7 @@ export const MainTabs = () => (
     />
     <Tab.Screen
       name="Browse"
-      children={() => <PlaceholderScreen label="Browse" />}
+      component={BrowseScreen}
       options={{ tabBarIcon: tabIcon('🔍'), tabBarLabel: 'Browse' }}
     />
     <Tab.Screen
@@ -55,12 +66,12 @@ export const MainTabs = () => (
     />
     <Tab.Screen
       name="Favourites"
-      children={() => <PlaceholderScreen label="Favourites" />}
-      options={{ tabBarIcon: tabIcon('♡'), tabBarLabel: 'Favourites' }}
+      component={FavouritesScreen}
+      options={{ tabBarIcon: tabIcon('♡', true), tabBarLabel: 'Favourites' }}
     />
     <Tab.Screen
       name="Profile"
-      children={() => <PlaceholderScreen label="Profile" />}
+      component={ProfileScreen}
       options={{ tabBarIcon: tabIcon('🙂'), tabBarLabel: 'Profile' }}
     />
   </Tab.Navigator>
