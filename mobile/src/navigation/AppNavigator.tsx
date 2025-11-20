@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BagDetailScreen } from '../screens/BagDetailScreen';
 import { AuthScreen } from '../screens/AuthScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 import { SplashScreen } from '../screens/SplashScreen';
 import { MainTabs } from './MainTabs';
 
@@ -37,6 +38,7 @@ export type RootStackParamList = {
   Onboarding: { step?: number };
   MainTabs: undefined;
   BagDetail: { bag?: BagData };
+  Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -48,6 +50,14 @@ export const AppNavigator = () => (
     <Stack.Screen name="Onboarding" component={OnboardingScreen} />
     <Stack.Screen name="MainTabs" component={MainTabs} />
     <Stack.Screen name="BagDetail" component={BagDetailScreen} />
+    <Stack.Screen
+      name="Settings"
+      component={SettingsScreen}
+      options={{
+        presentation: 'modal',
+        headerShown: false,
+      }}
+    />
   </Stack.Navigator>
 );
 

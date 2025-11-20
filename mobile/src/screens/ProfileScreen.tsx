@@ -10,16 +10,18 @@ import {
 } from 'react-native';
 import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
 
 import { AppButton } from '../components/AppButton';
+import { RootStackParamList } from '../navigation/AppNavigator';
 import { TabParamList } from '../navigation/MainTabs';
 import { RootState } from '../store';
 import { Colors } from '../theme/colors';
 
 type ProfileScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList, 'Profile'>,
-  BottomTabNavigationProp<TabParamList>
+  NativeStackNavigationProp<RootStackParamList>
 >;
 
 export const ProfileScreen = () => {
@@ -38,7 +40,7 @@ export const ProfileScreen = () => {
   };
 
   const handleSettings = () => {
-    // TODO: Navigate to settings
+    navigation.navigate('Settings');
   };
 
   return (
