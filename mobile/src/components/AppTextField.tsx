@@ -1,7 +1,7 @@
 // importing libraries
 import React from 'react';
 import { StyleSheet, TextInput, TextInputProps, View } from 'react-native';
-
+///
 import { Colors } from '../theme/colors';
 
 export const AppTextField: React.FC<TextInputProps> = (props) => (
