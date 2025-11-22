@@ -16,6 +16,7 @@ export const SurplusLogo: React.FC<SurplusLogoProps> = ({ size = 120, style }) =
         width: size,
         height: size,
         resizeMode: 'contain',
+        borderRadius: size * 0.15,
       },
       style,
     ]}
